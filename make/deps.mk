@@ -38,6 +38,7 @@ DEPS = amqp_client \
 	syslog \
 	trie \
 	wsock \
+	yamerl \
 	zucchini
 
 BUILD_DEPS = parse_trans
@@ -104,3 +105,6 @@ dep_horse = git https://github.com/ninenines/horse
 dep_proper = git https://github.com/manopapad/proper v1.2
 
 dep_syslog = git https://github.com/2600hz/erlang-syslog bbad537a1cb5e4f37e672d2e2665659e850662d0
+
+### needed for creating OpenAPI(swagger) 3.0
+dep_yamerl = git https://github.com/yakaz/yamerl 4e5a54a5a4a0cd9dc8ee30c8356642e9a2c3a443
