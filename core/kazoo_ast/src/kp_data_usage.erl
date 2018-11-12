@@ -119,7 +119,10 @@ insert_type(Type, Schema, 'undefined' = _OneOf) ->
 insert_type(Type, Schema, [_|_]=Of) ->
     case lists:any(fun(Elem) -> kz_json:get_value(<<"type">>, Elem) =/= 'undefined' end, Of) of
         'true' ->
-            io:format("schema can not define type both in (anyOf | allOf | oneOf) and root:~n~p~n", [Schema]),
+            case kz_json:get_value(<<"type">>, Schema) of
+                'undefined' -> 'ok';
+                _ -> io:format("schema can not define type both in (anyOf | allOf | oneOf) and root:~n~p~n", [Schema])
+            end,
             kz_json:delete_key(<<"type">>, Schema);
         'false' ->
             insert_type(Type, Schema, 'undefined')
