@@ -107,16 +107,23 @@ maybe_insert_schema(F, [], Default, Schema) ->
     kz_json:insert_values(Updates, insert_type(guess_type(F, Default), Schema)).
 
 insert_type(Types, Schema) ->
-    insert_type(Types, Schema, kz_json:get_value(<<"oneOf">>, Schema)).
+    OneOf = kz_json:get_first_defined([<<"oneOf">>, <<"anyOf">>, <<"allOf">>], Schema),
+    insert_type(Types, Schema, OneOf).
 
 insert_type({Type, ItemsType}, Schema, 'undefined') ->
     kz_json:insert_values([{<<"items">>, kz_json:from_list([{<<"type">>, ItemsType}])}
                           ,{<<"type">>, Type}
                           ], Schema);
-insert_type(Type, Schema, 'undefined') ->
+insert_type(Type, Schema, 'undefined' = _OneOf) ->
     kz_json:insert_values([{<<"type">>, Type}], Schema);
-insert_type(_, Schema, _oneOf) ->
-    Schema.
+insert_type(Type, Schema, [_|_]=Of) ->
+    case lists:any(fun(Elem) -> kz_json:get_value(<<"type">>, Elem) =/= 'undefined' end, Of) of
+        'true' ->
+            io:format("schema can not define type both in (anyOf | allOf | oneOf) and root:~n~p~n", [Schema]),
+            kz_json:delete_key(<<"type">>, Schema);
+        'false' ->
+            insert_type(Type, Schema, 'undefined')
+    end.
 
 check_default({_M, _F, _A}) -> 'undefined';
 check_default([<<_/binary>>|_]=L) ->
